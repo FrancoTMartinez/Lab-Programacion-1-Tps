@@ -43,11 +43,7 @@ void employee_init(Employee* arrayEmployee, int len){
  * in the first empty position
  * \param list employee*
  * \param len int
- * \param id int
- * \param name[] char
- * \param lastName[] char
- * \param salary float
- * \param sector int
+ * \param emptyIndex int
  * \return
 */
 int employee_add(Employee* arrayEmployee, int len, int emptyIndex){
@@ -57,15 +53,17 @@ int employee_add(Employee* arrayEmployee, int len, int emptyIndex){
 	if(arrayEmployee !=NULL && len>=0){
 		if(utn_isValidName(auxEmployee.name, 51, "\nEnter your name: ","error")==0){
 			if(utn_isValidName(auxEmployee.lastName,51,"\nEnter your lastName: ","error")==0){
-				if(utn_getFloat(&auxEmployee.salary,"\nEnter your salary: ","Error",0,1000000,2)==0){
+				if(utn_getFloat(&auxEmployee.salary,"\nEnter your salary: ","Error",0,1000000,4)==0){
 					if(utn_getInt(&auxEmployee.sector,"\nEnter your sector:"
 													"\n1-Administrative"
 													"\n2-Developer"
 													"\n3-Cleaning", "Erorr", 1,3 ,2)==0){
+						auxEmployee.isEmpty=1;
+						auxEmployee.id= employee_generateID();
 						arrayEmployee[emptyIndex]=auxEmployee;
-						arrayEmployee->isEmpty=1;
-						arrayEmployee->id= employee_generateID();
+
 						retorno=0;
+
 					}
 				}
 			}
@@ -74,7 +72,7 @@ int employee_add(Employee* arrayEmployee, int len, int emptyIndex){
 	return retorno;
 
 }
-/** \brief find an Employee by Id en returns the index position in array.
+/** \brief find an Employee by Id and returns the index position in array.
  *
  * \param list Employee*
  * \param len int
@@ -133,7 +131,7 @@ int employee_printEmployees(Employee* arrayEmployee,int len){
 	if(arrayEmployee!=NULL && len>=0){
 		for(int i=0;i<len;i++){
 			if(arrayEmployee[i].isEmpty==1){
-				printf("\n %d) Name: %s ,LastName: %s ,Salary: %.2f, Sector: %d,",i,
+				printf("\n ID: %d) Name: %s ,LastName: %s ,Salary: %.2f, Sector: %d,",arrayEmployee[i].id,
 																				arrayEmployee[i].name,
 																				arrayEmployee[i].lastName,
 																				arrayEmployee[i].salary,
@@ -173,18 +171,21 @@ int employee_modify(Employee* arrayEmployee,int len ,int idEmployee){
 					case 1:
 						if(utn_isValidName(auxEmployee.name, 51,"\nIngrese su nombre:","Error")==0){
 							strncpy(arrayEmployee[indexToModify].name,auxEmployee.name,25);
+							printf("\nModificacion exitosa.");
 							retorno=0;
 						}
 						break;
 					case 2:
-						if(utn_getString(auxEmployee.lastName,51,"\nIngrese su lastName:","Error")==0){
+						if(utn_isValidName(auxEmployee.lastName,51,"\nIngrese su lastName:","Error")==0){
 							strncpy(arrayEmployee[indexToModify].lastName,auxEmployee.lastName,25);
+							printf("\nModificacion exitosa.");
 							retorno=0;
 						}
 						break;
 					case 3:
 						if(utn_getFloat(&auxEmployee.salary,"\nEnter your salary: ","Error",0,1000000,2)==0){
 							arrayEmployee[indexToModify].salary=auxEmployee.salary;
+							printf("\nModificacion exitosa.");
 							retorno=0;
 						}
 						break;
@@ -194,10 +195,10 @@ int employee_modify(Employee* arrayEmployee,int len ,int idEmployee){
 														"\n2-Developer"
 														"\n3-Cleaning", "Erorr", 1,3 ,2)==0){
 							arrayEmployee[indexToModify].sector=auxEmployee.sector;
+							printf("\nModificacion exitosa.");
 						}
 						break;
 					default:
-						printf("Successfully.");
 						retorno=0;
 						break;
 				}
@@ -257,26 +258,23 @@ int employee_findFull(Employee* arrayEmployee, int len){
  */
 int employee_sortByLastName(Employee* arrayEmployee, int len){
 	int retorno=-1;
-	int flagSwap;
-	int i;
+	int i=0;
 	Employee auxEmployee;
 
 	if(arrayEmployee!=NULL && len >0){
-		do{
-			flagSwap=0;
-			for(i=0;i<len;i++){
-				if(arrayEmployee[i].isEmpty || arrayEmployee[i+1].isEmpty){
-					continue;
-				}
-				if(strncmp(arrayEmployee[i].lastName,arrayEmployee[i+1].lastName,51)>0){
-					flagSwap=1;
-					auxEmployee=arrayEmployee[i];
-					arrayEmployee[i]=arrayEmployee[i+1];
-					arrayEmployee[i+1]=auxEmployee;
-					retorno=0;
+		for(i=0;i<len;i++){
+			for(int j=i+1; j<len; j++){
+				if(arrayEmployee[i].isEmpty==1 && arrayEmployee[j].isEmpty==1){
+					if(strncmp(arrayEmployee[i].lastName,arrayEmployee[j].lastName,51)>0){
+
+						auxEmployee=arrayEmployee[i];
+						arrayEmployee[i]=arrayEmployee[j];
+						arrayEmployee[j]=auxEmployee;
+						retorno=0;
+					}
 				}
 			}
-		}while(flagSwap);
+		}
 	}
 
 	return retorno;
@@ -289,17 +287,18 @@ int employee_sortByLastName(Employee* arrayEmployee, int len){
  */
 int employee_averageSalary(Employee* arrayEmployee, int len, int indexLastEmployee){
 	int retorno=-1;
-	float auxSalaryRate;
-	float salaryRate;
-	int employeesRate;
+	float auxSalaryRate=0;
+	float salaryRate=0;
+	int employeesRate=0;
 
 	if(arrayEmployee!=NULL && len>0 && indexLastEmployee>0){
-		for(int i=0; i<indexLastEmployee-1;i++){
-			auxSalaryRate= arrayEmployee[i].salary+arrayEmployee[i+1].salary;
+		for(int i=0; i<=indexLastEmployee-1;i++){
+			auxSalaryRate+=arrayEmployee[i].salary;
 		}
-		salaryRate= auxSalaryRate/(indexLastEmployee-1);
+		salaryRate= auxSalaryRate/(indexLastEmployee);
 		if(employee_exceedSalary(arrayEmployee, indexLastEmployee, salaryRate, &employeesRate)==0){
 			printf("The average salary is: %.2f,and the number of employees that exceed the average salary is: %d",salaryRate,employeesRate);
+			retorno=0;
 		}
 	}
 	return retorno;
@@ -314,16 +313,17 @@ int employee_averageSalary(Employee* arrayEmployee, int len, int indexLastEmploy
  */
 int employee_exceedSalary(Employee* arrayEmployee, int indexLastEmployee, float salaryRate, int* employeesRate){
 	int retorno=-1;
-	int auxEmployeesRate;
+	int auxEmployeesRate=0;
 
 	if(arrayEmployee!=NULL && indexLastEmployee>0 && salaryRate>=0){
-		for(int i=0; i<indexLastEmployee-1;i++){
-			if(salaryRate > arrayEmployee[i].salary){
+		for(int i=0; i<indexLastEmployee;i++){
+			if(arrayEmployee[i].salary > salaryRate){
 				auxEmployeesRate++;
 				retorno=0;
 			}
 		}
 		*employeesRate=auxEmployeesRate;
+		retorno=0;
 	}
 	return retorno;
 }

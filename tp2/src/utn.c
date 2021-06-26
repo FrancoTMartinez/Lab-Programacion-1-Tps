@@ -18,16 +18,21 @@
  * longitud= longitud del array
  */
 static int myGets(char* charArray, int longitud){
-	int retorno=-1;
-
-	if(charArray!=NULL && longitud>0 && fgets(charArray,longitud,stdin)==charArray){
-		__fpurge(stdin);
-		if(charArray[strlen(charArray)-1]=='\n'){
-			charArray[strlen(charArray)-1]= '\0';
-		}
-		retorno=0;
-	}
-	return retorno;
+    int output = -1;
+    char bufferString[4096];
+    __fpurge(stdin);
+    if (charArray != NULL && longitud > 0 && fgets(bufferString, sizeof(bufferString), stdin) != NULL) {
+        if (bufferString[0] == '\n') {
+            printf("Error, solo ingreso un ENTER\n");
+        } else {
+            bufferString[strnlen(bufferString, sizeof(bufferString)) - 1] = '\0';
+            if (strnlen(bufferString, sizeof(bufferString)) <= longitud) {
+                strncpy(charArray, bufferString, longitud);
+                output = 0;
+            }
+        }
+    }
+    return output;
 }
 /**
  * brief: valida que el array estre comprendido de solo numeros enteros
@@ -86,6 +91,20 @@ static int ValidateText(char* pString){
 	}
 	return retorno;
 }
+static int ValidateTextWithNoLine(char* pString){
+	int i=0;
+	int retorno=1;
+	if(pString !=NULL && strlen(pString)>0){
+		while(pString[i] != '\0'){
+			if(pString[i]<' ' || pString[i]>126){
+				retorno= 0;
+				break;
+			}
+		i++;
+		}
+	}
+	return retorno;
+}
 /**
  * brief: array de caracteres a Mayusculas
  * pString= puntero a un array del tipo char
@@ -104,7 +123,7 @@ static int stringToUpperCase(char pString[]){
 	}
 	return retorno;
 }
-static int stringToLowerCase(char pString[]){
+/*static int stringToLowerCase(char pString[]){
 	int i=0;
 	int retorno=0;
 
@@ -117,25 +136,56 @@ static int stringToLowerCase(char pString[]){
 		retorno=1;
 	}
 	return retorno;
-}
+}*/
 /**
  * brief: valida que el array estre comprendido de solo letras y espacios
  * pString= puntero a un array del tipo char
  */
-static int ValidateName(char pString[]){
+int ValidateName(char pString[]){
 	int i=0;
 	int retorno=0;
 
 	if(pString !=NULL && strlen(pString)>0){
-		if(stringToUpperCase(pString)==0){
-			while(pString[i] != '\n'){
-				if((pString[i]<'A' || pString[i]>'Z') && pString[i]!=' ' ){
+			while(pString[i]!='\0'){
+				if((pString[i]<'a' || pString[i]>'z') && (pString[i]<'A' || pString[i]>'Z') && pString[i]!=' '&& pString[i]!='-' ){
 					retorno= 1;
 					break;
 				}
 			i++;
 			}
-		}
+
+	}
+	return retorno;
+}
+int ValidateCode(char pString[]){
+	int i=0;
+	int retorno=0;
+
+	if(pString !=NULL && strlen(pString)>0){
+			while(pString[i]!='\0'){
+				if((pString[i]<'a' || pString[i]>'z') && (pString[i]<'A' || pString[i]>'Z') && (pString[i]<'0' || pString[i]>'9') && pString[i]!='_'&& pString[i]!='-'&& pString[i]!=' ' ){
+					retorno= 1;
+					break;
+				}
+			i++;
+			}
+
+	}
+	return retorno;
+}
+int ValidateNomenclatura(char pString[]){
+	int i=0;
+	int retorno=0;
+
+	if(pString !=NULL && strlen(pString)>0){
+			while(pString[i]!='\0'){
+				if((pString[i]<'a' || pString[i]>'z') && (pString[i]<'A' || pString[i]>'Z') && (pString[i]<'0' || pString[i]>'9') && pString[i]!='.' ){
+					retorno= 1;
+					break;
+				}
+			i++;
+			}
+
 	}
 	return retorno;
 }
@@ -232,6 +282,21 @@ static int getString(char* pString, int limite){
 	}
 	return retorno;
 }
+static int getStringWthNoLine(char* pString, int limite){
+
+	int retorno=-1;
+	char buffer[limite];
+
+	if(pString!=NULL){
+		if(!myGets(buffer, limite) && ValidateTextWithNoLine(buffer)){
+				strncpy(pString,buffer,limite);
+				retorno=0;
+		}
+	}else{
+		retorno=-1;
+	}
+	return retorno;
+}
 /**
  * brief: obtiene un int utilizandos varias validaciones ya mencionadas.
  * pNumero= puntero a una variable del tipo int.
@@ -267,6 +332,19 @@ int utn_getInt(int* pNumero,char* pTexto,char* pError,int min,int max,int reinte
 		retorno=-1;
 	}
 	return retorno;
+}
+int utn_isNumeric(char *pCadena){
+    int output = 1;
+    if(pCadena !=NULL){
+        for(int x = 0; pCadena[x] !='\0'; x++){
+            if(pCadena[x] < '0' || pCadena[x] > '9')
+            {
+                output = 0;
+                break;
+            }
+        }
+    }
+    return output;
 }
 /**
  * brief: obtiene un float utilizandos varias validaciones ya mencionadas.
@@ -333,13 +411,7 @@ char utn_getString(char* pString,int limite,char* pTexto,char* pError){
 	}
 	return retorno;
 }
-/**
- * brief: obtiene un char utilizandos varias validaciones ya mencionadas.
- * pString= puntero a una variable del tipo char.
- * pTexto= mensaje que le indicara al usario que ingresar
- * pError= mensaje de error
- */
-char utn_isValidName(char* pString,int limite,char* pTexto,char* pError){
+char utn_getStringWithNoLine(char* pString,int limite,char* pTexto,char* pError){
 
 	int retorno;
 	char bufferChar[limite];
@@ -348,24 +420,83 @@ char utn_isValidName(char* pString,int limite,char* pTexto,char* pError){
 		do{
 			printf("%s",pTexto);
 			__fpurge(stdin);
-			if(getString(bufferChar,limite)==0){
-				if(ValidateName(bufferChar)==0){
-					if(stringToLowerCase(bufferChar)==0){
-						strncpy(pString,bufferChar,limite);
-						retorno= 0;
-						break;
-					}
+			if(getStringWthNoLine(bufferChar,limite)==0){
+				strncpy(pString,bufferChar,limite);
+				retorno= 0;
+				break;
+			}else{
+				printf("%s\n",pError);
+				retorno=-1;
+			}
+		}while(retorno==-1);
+	}else{
+		retorno=-1;
+	}
+	return retorno;
+}
+/**
+ * brief: obtiene un char utilizandos varias validaciones ya mencionadas.
+ * pString= puntero a una variable del tipo char.
+ * pTexto= mensaje que le indicara al usario que ingresar
+ * pError= mensaje de error
+ */
+int utn_isValidName(char* pString,int limite,char* pTexto,char* pError){
+
+	int retorno;
+	char bufferChar[limite];
+
+	if(pString!= NULL && pTexto!= NULL && pError!= NULL){
+		do{
+			printf("%s",pTexto);
+			__fpurge(stdin);
+				if( myGets(bufferChar, limite)==0 && ValidateName(bufferChar)==0){
+					strncpy(pString,bufferChar,limite);
+					retorno= 0;
+					break;
 				}else{
 					printf("%s\n",pError);
 					retorno=1;
 				}
-			}else{
-				printf("%s\n",pError);
-				retorno=1;
-			}
+
 		}while(retorno==1);
 	}else{
 		retorno=-1;
+	}
+	return retorno;
+}
+int utn_isValidAlphaNumericCode(char* pString,int limite,char* pTexto,char* pError){
+
+	int retorno;
+	char bufferChar[limite];
+
+	if(pString!= NULL && pTexto!= NULL && pError!= NULL){
+		do{
+			printf("%s",pTexto);
+			__fpurge(stdin);
+				if(!myGets(bufferChar,limite) && !ValidateCode(bufferChar)){
+					strncpy(pString,bufferChar,limite);
+					retorno= 0;
+					break;
+				}else{
+					printf("%s\n",pError);
+					retorno=1;
+				}
+		}while(retorno==1);
+	}else{
+		retorno=-1;
+	}
+	return retorno;
+}
+char utn_isValidString(char* pString){
+
+	int retorno;
+
+	if(pString!= NULL){
+				if(ValidateName(pString)==0){
+					retorno=0;
+				}else{
+					retorno=1;
+				}
 	}
 	return retorno;
 }
@@ -490,4 +621,24 @@ int utn_getCuit(char* pString,int limite,char* pTexto,char* pError, int reintent
 		retorno=-1;
 	}
 	return retorno;
+}
+int utn_getStringWithOnlyNumbers(char *msg, char *msgError, char *pCadena, int limite, int reintentos) {
+    int output = -1;
+    if (msg != NULL && msgError != NULL && pCadena != NULL && limite > 0 && reintentos > 0) {
+        do {
+            printf("%s", msg);
+            if (!(myGets(pCadena, limite)) && ValidateIntNumer(pCadena)) {
+                for(int x = 0; x<limite; x++){
+                    pCadena[x] = toupper(pCadena[x]);
+                }
+                output = 0;
+            } else {
+                reintentos--;
+                if (reintentos > 0) {
+                    printf("%s: %d\n", msgError, reintentos);
+                }
+            }
+        } while (output != 0 && reintentos > 0);
+    }
+    return output;
 }
