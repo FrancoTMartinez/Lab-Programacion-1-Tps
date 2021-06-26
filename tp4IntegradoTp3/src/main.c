@@ -53,16 +53,28 @@ int main()
 					controller_addEmployee(listaEmpleados);
 					break;
 				case 4:
-					controller_editEmployee(listaEmpleados);
+					if(!ll_isEmpty(listaEmpleados)){
+						controller_editEmployee(listaEmpleados);
+					}else{
+						printf("\nLa lista esta vacia.");
+					}
 					break;
 				case 5:
-					controller_removeEmployee(listaEmpleados);
+					if(!ll_isEmpty(listaEmpleados)){
+						controller_removeEmployee(listaEmpleados);
+					}else{
+						printf("\nLa lista esta vacia.");
+					}
 					break;
 				case 6:
 					controller_ListEmployee(listaEmpleados);
 					break;
 				case 7:
-					controller_sortEmployee(listaEmpleados);
+					if(!ll_isEmpty(listaEmpleados)){
+						controller_sortEmployee(listaEmpleados);
+					}else{
+						printf("\nLa lista esta vacia.");
+					}
 					break;
 				case 8:
 					controller_saveAsText("/home/franco/Documents/facultad/ejercicios/funciones-ejercicios/tp4IntegradoTp3/src/textMode.txt", listaEmpleados);
@@ -71,6 +83,9 @@ int main()
 					controller_saveAsBinary("/home/franco/Documents/facultad/ejercicios/funciones-ejercicios/tp4IntegradoTp3/src/textBinary.txt", listaEmpleados);
 					break;
 				case 10:
+					if(!ll_deleteLinkedList(listaEmpleados)){
+						printf("\nLista Borrada.");
+					}
 					break;
 			}
     }while(option != 10);

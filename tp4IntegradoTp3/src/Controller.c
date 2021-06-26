@@ -122,25 +122,33 @@ int controller_editEmployee(LinkedList* pArrayListEmployee)
 {
 	int idToModify;
 	Employee* pEmployee;
+	Employee* pEmployeeAux;
 	char nombre[128];
 	int horasTrabajadas;
 	int sueldo;
-
+	int index;
 
 	if(pArrayListEmployee!=NULL){
 		if(!utn_getInt(&idToModify,"\nEnter an ID to modify: ","Error",0,99999,2)){
+
 			pEmployee= findById(pArrayListEmployee, idToModify);
+			index= ll_indexOf(pArrayListEmployee, pEmployee);
+
 
 			if(pEmployee!=NULL){
 				if(!utn_isValidName(nombre,128,"\nEnter your name: ","Error") &&
 				   !utn_getInt(&horasTrabajadas,"\nEnter worked hours: ","Error",0,5000,3) &&
 				   !utn_getInt(&sueldo,"\nEnter salary: ","Error",0,100000,3)){
 
-					if(	!employee_setNombre(pEmployee, nombre) &&
-						!employee_setHorasTrabajadas(pEmployee, horasTrabajadas) &&
-						!employee_setSueldo(pEmployee, sueldo)){
+					pEmployeeAux=employee_newParametros(idToModify, nombre, horasTrabajadas, sueldo);
 
-						printf("\nSuccessfully modified Employee.");
+					if(pEmployeeAux !=NULL){
+
+						if(!ll_set(pArrayListEmployee, index, pEmployeeAux)){
+							printf("\nSuccessfully modified Employee.");
+						}else{
+							employee_delete(pEmployeeAux);
+						}
 						return 0;
 					}
 				}
